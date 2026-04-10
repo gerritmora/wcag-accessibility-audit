@@ -14,7 +14,8 @@ A Claude Code plugin that audits web projects for WCAG 2.2 accessibility complia
 ## Installation
 
 ```bash
-claude plugin add gerritmora/wcag-accessibility-audit
+claude plugin marketplace add gerritmora/wcag-accessibility-audit
+claude plugin install wcag-accessibility-audit
 ```
 
 ## Usage
