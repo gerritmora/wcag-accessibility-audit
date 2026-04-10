@@ -24,7 +24,7 @@ The agent handles file discovery, automated pattern scanning, manual review, and
 
 ### Usage Examples
 
-- `/wcag:audit` — audit current project at Level AA (default)
-- `/wcag:audit src/` — audit specific directory at Level AA
-- `/wcag:audit --level A` — audit for critical Level A issues only
-- `/wcag:audit src/components --level AAA` — aspirational full audit of components
+- `/wcag-accessibility-audit:audit` — audit current project at Level AA (default)
+- `/wcag-accessibility-audit:audit src/` — audit specific directory at Level AA
+- `/wcag-accessibility-audit:audit --level A` — audit for critical Level A issues only
+- `/wcag-accessibility-audit:audit src/components --level AAA` — aspirational full audit of components

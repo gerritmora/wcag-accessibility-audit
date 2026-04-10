@@ -23,10 +23,10 @@ claude plugin install wcag-accessibility-audit
 ### Slash Command
 
 ```bash
-/wcag:audit                              # Audit current project (Level AA)
-/wcag:audit src/                          # Audit specific directory
-/wcag:audit --level A                     # Level A only (critical issues)
-/wcag:audit src/components --level AAA    # Full audit of components
+/wcag-accessibility-audit:audit                              # Audit current project (Level AA)
+/wcag-accessibility-audit:audit src/                          # Audit specific directory
+/wcag-accessibility-audit:audit --level A                     # Level A only (critical issues)
+/wcag-accessibility-audit:audit src/components --level AAA    # Full audit of components
 ```
 
 ### Natural Language
@@ -53,6 +53,11 @@ Here's what an audit report looks like:
 > ### Scope
 > **Pages audited:** index.html, about.html, contact.html
 > **User flows tested:** Contact form submission
+>
+> ### Methodology
+> **Automated scanning:** Grep-based pattern matching against WCAG criteria
+> **Manual review:** Semantic HTML, ARIA, keyboard navigation
+> **Tools:** Claude Code WCAG Audit Plugin
 >
 > ### Summary
 > | Severity | Count |
