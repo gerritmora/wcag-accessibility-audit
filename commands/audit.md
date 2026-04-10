@@ -1,6 +1,6 @@
 ---
 description: Run a WCAG 2.2 accessibility audit on your project
-argument-hint: [target-path] [--level A|AA|AAA]
+argument-hint: "[target-path] [--level A|AA|AAA]"
 ---
 
 # WCAG Accessibility Audit

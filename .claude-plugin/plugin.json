@@ -1,0 +1,8 @@
+{
+  "name": "wcag-accessibility-audit",
+  "version": "1.0.0",
+  "description": "WCAG 2.2 accessibility auditing for Claude Code. Scans HTML/CSS/JS/React/Vue/Svelte projects for accessibility violations using 50+ automated grep patterns, provides structured manual review checklists, and generates conformance reports with severity-prioritized findings and code fix recommendations. Covers all 86 normative WCAG 2.2 success criteria. Supports React/Next.js, Tailwind CSS, MUI, and other modern frameworks. Use before launches, for compliance audits (ADA, Section 508), or when fixing reported accessibility issues.",
+  "author": {
+    "name": "Gerrit Mora"
+  }
+}
