@@ -1,0 +1,23 @@
+{
+  "name": "wcag-accessibility-audit",
+  "version": "1.0.0",
+  "description": "WCAG 2.2 accessibility auditing plugin for Claude Code — automated scanning, manual review guidance, and structured reporting",
+  "author": {
+    "name": "Gerrit Mora"
+  },
+  "homepage": "https://github.com/gerritmora/wcag-accessibility-audit",
+  "repository": "https://github.com/gerritmora/wcag-accessibility-audit",
+  "license": "MIT",
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "wcag",
+    "wcag-2.2",
+    "audit",
+    "ada",
+    "section-508",
+    "aria",
+    "screen-reader",
+    "keyboard-navigation"
+  ]
+}
