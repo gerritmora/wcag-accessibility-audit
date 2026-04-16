@@ -1,6 +1,17 @@
 # WCAG Audit Grep Patterns
 
-Automated scanning patterns for accessibility issues. Run these using the Grep tool on HTML/CSS/JS/TSX/JSX files.
+Automated scanning patterns for accessibility issues. Run these against HTML/CSS/JS/TSX/JSX files.
+
+## Running patterns
+
+Most patterns work with the Grep tool. **Patterns marked [PCRE2] use negative lookahead** (`(?!...)`) and must be run via Bash with `rg --pcre2` — the Grep tool's default regex engine does not support lookarounds and will silently return zero matches for these patterns.
+
+```bash
+# Example: run a [PCRE2] pattern via Bash
+rg --pcre2 '<Tooltip(?![^>]*aria-)' --glob '*.{tsx,jsx}' apps/
+```
+
+If a [PCRE2] pattern appears to have no matches when run through the Grep tool, that is a false negative — re-run it through Bash with `--pcre2` before trusting the result.
 
 ---
 
@@ -84,7 +95,7 @@ Expected: Dynamic content areas should announce updates
 
 These patterns identify accessibility issues. Matches need review and likely fixes.
 
-### Images Missing Alt
+### Images Missing Alt [PCRE2]
 ```
 Pattern: <img(?![^>]*alt=)[^>]*>
 Files: **/*.{html,tsx,jsx,vue,svelte}
@@ -100,7 +111,7 @@ Issue: 2.4.3 Focus Order (A)
 Fix: Use tabindex="0" or natural DOM order
 ```
 
-### Focus Outline Removed
+### Focus Outline Removed [PCRE2]
 ```
 Pattern: outline:\s*none|outline:\s*0(?!\.\d)
 Files: **/*.{css,scss,less}
@@ -142,7 +153,7 @@ Issue: 1.4.2 Audio Control (A)
 Fix: Remove autoplay or ensure muted/controls present. Note: <video autoplay muted> is acceptable (no audio plays). The violation is unmuted autoplay audio >3 seconds.
 ```
 
-### Target Blank Without Rel
+### Target Blank Without Rel [PCRE2]
 ```
 Pattern: target="_blank"(?![^>]*rel=)
 Files: **/*.{html,tsx,jsx,vue,svelte}
@@ -150,7 +161,7 @@ Issue: Security + UX concern
 Fix: Add rel="noopener noreferrer"
 ```
 
-### Click Handlers Without Keyboard
+### Click Handlers Without Keyboard [PCRE2]
 ```
 Pattern: onclick=(?![^>]*onkeydown|onkeyup)
 Files: **/*.{html,tsx,jsx,vue,svelte}
@@ -196,7 +207,7 @@ Fix: Remove tabindex or aria-hidden
 Note: This pattern only catches focusable attributes on the SAME element as aria-hidden. It CANNOT detect focusable CHILD elements inside aria-hidden containers (e.g., <div aria-hidden="true"><button>Click</button></div>). Manual review is required for container-level aria-hidden.
 ```
 
-### Missing Required ARIA Attributes
+### Missing Required ARIA Attributes [PCRE2]
 Check elements with these roles have required attributes:
 
 ```
@@ -233,13 +244,18 @@ Issue: 4.1.2 - aria-controls points to nothing
 
 ## Color and Contrast
 
-### Color Words in Error Messages (May Indicate Color-Only)
-```
-Pattern: (red|green|blue|yellow|orange).*error|error.*(red|green|blue|yellow|orange)
-Files: **/*.{html,tsx,jsx,vue,svelte} **/*.{js,ts}
-Issue: 1.4.1 Use of Color (A)
-Note: Manual review - ensure non-color indicator present
-```
+### 1.4.1 Use of Color — manual review required (no grep pattern)
+
+Use of color is not reliably detectable by grep. Natural-language words like `occurred`, `required`, `shared`, `stored`, `ordered` all contain the substring `red`, producing heavy false positives; Tailwind utility classes (`bg-red-500`, `text-green-600`) compound the noise. A prior pattern was removed in v1.1 because it generated 70+ false positives on a typical React/TS codebase.
+
+During manual review, verify:
+
+- Every error, warning, success, and status state uses an **icon, label, or text cue** alongside color.
+- Required form fields are not marked only by a red asterisk — include `(required)` text or `aria-required="true"`.
+- Link text is not distinguishable only by color — also use underline, weight, or size.
+- Map, chart, and graph legends identify data series by both **color and shape/pattern/text**.
+
+For runtime verification, axe-core's `color-contrast` and `link-in-text-block` rules catch a subset at runtime (see Phase 2.5 in SKILL.md).
 
 ### Hardcoded Colors (Should Use Variables)
 ```
@@ -253,14 +269,14 @@ Note: For contrast verification, extract colors for testing
 
 ## Form Patterns
 
-### Inputs Without Associated Labels
+### Inputs Without Associated Labels [PCRE2]
 ```
 Pattern: <input(?![^>]*aria-label)[^>]*id="([^"]+)"
 Note: Cross-reference with <label for="$1">
 Issue: 3.3.2 Labels or Instructions (A)
 ```
 
-### Required Fields Without ARIA (Informational)
+### Required Fields Without ARIA (Informational) [PCRE2]
 ```
 Pattern: required(?![^>]*aria-required)
 Files: **/*.{html,tsx,jsx,vue,svelte}
@@ -319,21 +335,21 @@ Issue: 2.2.1 Timing Adjustable (A) / 2.2.2 Pause, Stop, Hide (A)
 
 ## Tables
 
-### Data Tables Without Headers
+### Data Tables Without Headers [PCRE2]
 ```
 Pattern: <table(?![^>]*role="presentation")
 Cross-check: Should contain <th>
 Issue: 1.3.1 Info and Relationships (A)
 ```
 
-### Missing Table Caption
+### Missing Table Caption [PCRE2]
 ```
 Pattern: <table(?![^<]*<caption)
 Note: Complex tables benefit from <caption>
 Issue: 1.3.1 Info and Relationships (A)
 ```
 
-### Table Headers Without Scope
+### Table Headers Without Scope [PCRE2]
 ```
 Pattern: <th(?![^>]*scope=)
 Files: **/*.{html,tsx,jsx,vue,svelte}
@@ -446,7 +462,7 @@ Files: **/*.{html,tsx,jsx,vue,svelte}
 Note: Identify all media for manual caption/description review. Each video needs captions (1.2.2) and audio description (1.2.3/1.2.5). Each audio-only element needs a transcript (1.2.1).
 ```
 
-### Video Without Captions Track
+### Video Without Captions Track [PCRE2]
 ```
 Pattern: <video(?![^>]*<track)
 Files: **/*.{html,tsx,jsx,vue,svelte}
@@ -455,7 +471,7 @@ Note: <track> may be added dynamically — verify in browser. Also check for thi
 Fix: Add <track kind="captions" src="captions.vtt" srclang="en" label="English">
 ```
 
-### Audio Without Controls
+### Audio Without Controls [PCRE2]
 ```
 Pattern: <audio(?![^>]*controls)
 Files: **/*.{html,tsx,jsx,vue,svelte}
@@ -467,7 +483,7 @@ Fix: Add controls attribute to audio elements so users can pause/stop/adjust vol
 
 ## Dialog and Modal Accessibility
 
-### Unlabeled Dialog
+### Unlabeled Dialog [PCRE2]
 ```
 Pattern: role="dialog"(?![^>]*aria-label)(?![^>]*aria-labelledby)
 Files: **/*.{html,tsx,jsx,vue,svelte}
@@ -475,7 +491,7 @@ Issue: 4.1.2 Name, Role, Value (A)
 Fix: Add aria-label="Dialog title" or aria-labelledby="heading-id" to the dialog element.
 ```
 
-### Dialog Without aria-modal
+### Dialog Without aria-modal [PCRE2]
 ```
 Pattern: role="dialog"(?![^>]*aria-modal)
 Files: **/*.{html,tsx,jsx,vue,svelte}
@@ -513,7 +529,7 @@ Fix: Remove orientation restrictions unless essential to the content (e.g., a pi
 
 ## Input Modalities
 
-### Mouse-Only Down Event
+### Mouse-Only Down Event [PCRE2]
 ```
 Pattern: onmousedown(?![^>]*onkeydown)(?![^>]*onkeyup)
 Files: **/*.{html,tsx,jsx,vue,svelte}
@@ -557,7 +573,7 @@ Note: Manual review required — sticky/fixed headers, footers, and banners may 
 
 ## React/JSX-Specific Patterns
 
-### Next.js Image Without Alt
+### Next.js Image Without Alt [PCRE2]
 ```
 Pattern: <Image(?![^>]*alt)
 Files: **/*.{tsx,jsx}
@@ -587,7 +603,7 @@ Note: Native interactive elements (<button>, <a>) handle keyboard automatically.
 
 ## Tailwind CSS Patterns
 
-### Focus Removal via Tailwind
+### Focus Removal via Tailwind [PCRE2]
 ```
 Pattern: outline-none(?!.*focus-visible)
 Files: **/*.{html,tsx,jsx,vue,svelte}
@@ -616,7 +632,18 @@ Note: Cross-check with prefers-reduced-motion in CSS.
 
 ## Component Library Patterns
 
-### MUI IconButton Without Label
+### Framework runtime awareness — read before running these patterns
+
+Modern UI libraries inject ARIA at runtime, so source code that looks unlabeled may be fine in the live app. Treat matches from the patterns below as **"source-level suspicion, verify at runtime"** — not confirmed violations.
+
+- **MUI v5+ `<Tooltip title="string">`** sets `aria-label` on its child element (see `@mui/material/Tooltip/Tooltip.js`). An `IconButton` wrapped in `<Tooltip title="Edit">` already has an accessible name of "Edit" — flagging it as missing a label is a false positive.
+- **Radix UI** primitives (Dialog, Popover, Tooltip, DropdownMenu) manage labels, roles, and focus internally.
+- **Headless UI** components (Menu, Listbox, Dialog, Combobox) manage ARIA state automatically.
+- **MUI `<TextField>`, `<FormControl>`, `<FormControlLabel>`** wire `<label>`/`for`/`id` associations automatically.
+
+**Resolution:** If Tier 2 (axe or Lighthouse via Phase 2.5 in SKILL.md) runs, trust its verdict over the grep match. If Tier 2 does not run, every match from the patterns below needs manual verification in the rendered DOM (e.g., DevTools → Accessibility tree) before being included as a finding.
+
+### MUI IconButton Without Label [PCRE2]
 ```
 Pattern: <IconButton(?![^>]*aria-label)
 Files: **/*.{tsx,jsx}
@@ -624,7 +651,7 @@ Issue: 4.1.2 Name, Role, Value (A)
 Fix: Add aria-label="Description" to IconButton components.
 ```
 
-### Tooltip Without ARIA Association
+### Tooltip Without ARIA Association [PCRE2]
 ```
 Pattern: <Tooltip(?![^>]*aria-)
 Files: **/*.{tsx,jsx}

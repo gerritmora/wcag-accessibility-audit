@@ -36,7 +36,25 @@ Glob for `**/*.{html,tsx,jsx,vue,svelte,ts,js,css,scss,less}`. Confirm target le
 
 ### Phase 2: Automated Scan
 
-Load `audit-patterns.md`. Run positive patterns (should exist) and negative patterns (problems).
+Load `audit-patterns.md`. Run positive patterns (should exist) and negative patterns (problems). Note that patterns tagged `[PCRE2]` use negative lookahead and must be run via Bash with `rg --pcre2` rather than the Grep tool — see the "Running patterns" section at the top of `audit-patterns.md`.
+
+### Phase 2.5: Runtime Verification (recommended)
+
+Static analysis (Phase 2) catches roughly 20–30% of WCAG issues. Runtime verification catches most of the rest — computed color contrast, name/role/value, ARIA ID resolution, dynamic content, focus management. Ground every finding in WCAG 2.2 success criteria; the runtime tools already tag their findings that way.
+
+Pick the first available engine in this order:
+
+1. **Project has `@axe-core/playwright` in `package.json`:** reuse the existing Playwright harness. Run the project's accessibility spec (typically `npx playwright test --grep @a11y` or the file name, e.g. `e2e/**/accessibility.spec.ts`). Axe supports WCAG tag filtering — pass `['wcag2a', 'wcag2aa', 'wcag22aa']` to match the target level. Parse violations with `impact`, `id`, `description`, `nodes`, and `helpUrl` fields into the report.
+
+2. **Chrome DevTools MCP available** (`mcp__chrome-devtools__lighthouse_audit`): start the project's dev server, then for each public page listed in `wcag.config.{js,ts,json}` (or a sensible default: `/`, `/login`), navigate and run Lighthouse with `categories: ['accessibility']`. Parse the returned audit results; map each `audits[id].details.items[].node.selector` into the report. Lighthouse wraps axe-core, so findings are WCAG-tagged the same way.
+
+3. **Lighthouse CLI resolvable** (`npx lighthouse` or `lighthouse` in PATH): spawn `npx lighthouse <url> --only-categories=accessibility --output=json --output-path=stdout --quiet --chrome-flags="--headless"` per page. Parse JSON identically to option 2.
+
+4. **None of the above available:** skip the phase and emit a recommendation in the final report, e.g.: *"Runtime verification was not performed. Install `@axe-core/playwright` (`npm i -D @axe-core/playwright`) or enable the Chrome DevTools MCP to close the ~50–70% static-analysis coverage gap (computed contrast, ARIA resolution, dynamic content, focus management)."*
+
+**Auth-protected pages:** v1.1 does not handle authenticated runtime audits. Audit only the public pages you can reach without login. If the app has primarily protected routes, call this out in the report's Scope section.
+
+**Merging findings:** Treat Tier 2 (runtime) findings as authoritative when they overlap with Tier 1 (grep). Keep Tier 1 findings that Tier 2 did not confirm, but label them *"source-level suspicion (unverified at runtime)"* so reviewers know the status.
 
 ### Phase 3: Manual Review
 
@@ -69,7 +87,11 @@ Load `audit-patterns.md`. Run positive patterns (should exist) and negative patt
 
 ### Phase 4: Report
 
-Use template below. Categorize by WCAG criterion, prioritize by severity.
+Use the template below. Categorize every finding by WCAG 2.2 success criterion; prioritize by severity.
+
+**Output location.** Write the full report to `docs/accessibility/wcag-audit-YYYY-MM-DD.md` (creating the directory if needed) unless the user specified a different location via `--output <path>`. Echo a short summary to the conversation — counts by severity, tier coverage (which phases ran), the path of the written report, and the top 3 blockers if any.
+
+**Conformance claim rule.** A report may only assert WCAG conformance (*Conforms / Partially Conforms / Does Not Conform*) when all three audit phases (2, 2.5, 3) executed. Otherwise use an honest label: *"Source-level scan"* (Phase 2 only), *"Automated WCAG {level} scan — manual verification required"* (Phase 2 + 2.5), or *"Audit in progress"* (incomplete). WCAG's [normative conformance requirements](https://www.w3.org/TR/WCAG22/#conformance-reqs) require human evaluation for many criteria — the claim should reflect what the audit actually covered.
 
 ## Quick Reference (POUR)
 
