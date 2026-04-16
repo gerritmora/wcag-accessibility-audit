@@ -50,14 +50,16 @@ Here's what an audit report looks like:
 >
 > ### Conformance Declaration
 > Partially Conforms to WCAG 2.2 Level AA.
+> *(All three audit phases ran: source scanning, runtime verification, and manual review. Conformance claims are gated on full-phase coverage — a source-only scan would be labeled "Source-level scan," not a conformance statement.)*
 >
 > ### Scope
-> **Pages audited:** index.html, about.html, contact.html
+> **Pages audited:** /, /about, /contact (public pages only)
 > **User flows tested:** Contact form submission
 >
 > ### Methodology
-> **Automated scanning:** Grep-based pattern matching against WCAG criteria
-> **Manual review:** Semantic HTML, ARIA, keyboard navigation
+> **Source-level scan:** Grep-based pattern matching against WCAG 2.2 criteria (50+ patterns; [PCRE2] patterns run via `rg --pcre2`)
+> **Runtime verification:** axe-core via `@axe-core/playwright` (tags: `wcag2a`, `wcag2aa`, `wcag22aa`)
+> **Manual review:** Semantic HTML, ARIA, keyboard navigation, screen reader announcements, color-only indicators
 > **Tools:** Claude Code WCAG Audit Plugin
 >
 > ### Summary
