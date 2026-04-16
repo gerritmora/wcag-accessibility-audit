@@ -1,7 +1,7 @@
 {
   "name": "wcag-accessibility-audit",
   "version": "1.1.0",
-  "description": "WCAG 2.2 accessibility auditing plugin for Claude Code — source scanning, axe/Lighthouse runtime verification, manual-review guidance, and structured reporting",
+  "description": "Audits web projects against WCAG 2.2 — source scan, axe/Lighthouse runtime checks, and manual-review checklist.",
   "author": {
     "name": "Gerrit Mora"
   },

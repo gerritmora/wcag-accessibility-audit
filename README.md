@@ -1,16 +1,29 @@
 # WCAG Accessibility Audit
 
-A Claude Code plugin that audits web projects for WCAG 2.2 accessibility compliance. Scans your codebase for barriers, identifies issues by severity, and provides actionable fix recommendations.
+A Claude Code plugin that audits a web project against WCAG 2.2 and returns a prioritized fix list — every finding tied to a specific success criterion, with severity, file and line, and a fix example.
 
-## Features
+## How it works
 
-- **Automated scanning** — 50+ grep patterns detect common accessibility violations across HTML, CSS, JS, React, Vue, Svelte, and Tailwind
-- **Runtime verification** — integrates with `@axe-core/playwright` or Chrome DevTools MCP's Lighthouse audit when available, catching issues grep can't (computed color contrast, name/role/value, ARIA ID resolution, dynamic content, focus management)
-- **Manual review guidance** — structured checklist for issues that require human judgment (keyboard flows, screen reader announcements, cognitive load, motion sensitivity)
-- **Framework-aware** — patterns for React/Next.js (JSX, `<Image>`, `tabIndex`), Tailwind (`outline-none`, `sr-only`), and component libraries (MUI, Radix, Headless UI) with runtime-behavior notes to prevent false positives
-- **Structured reports** — findings categorized by WCAG 2.2 criterion, prioritized by severity, written to `docs/accessibility/wcag-audit-YYYY-MM-DD.md`
-- **Complete WCAG 2.2 reference** — all 86 normative success criteria organized by POUR principles
-- **Subagent isolation** — audits run in a separate context so your main conversation stays clean
+The plugin works in three passes, in order:
+
+**1. Source scan.** It reads your code and flags patterns that signal accessibility problems — images without alt text, form inputs without labels, `outline: none` with no replacement focus style, and about fifty others. Each pattern is tagged with the WCAG rule it's checking against.
+
+**2. Runtime check, if the tooling exists.** When the project has `@axe-core/playwright`, or the Chrome DevTools MCP is available in the session, the plugin uses it to test rendered pages. That catches what source reading can't: real contrast ratios, ARIA that only resolves at runtime, focus getting stuck, content that moves around unexpectedly. If nothing's installed, the report tells you which tool to add and why.
+
+**3. Manual-review checklist.** Some things no tool can evaluate — whether keyboard flow makes sense, whether a screen reader announces the right things, whether error messages are clear. You get a structured checklist with prompts for those.
+
+## What you get
+
+The full report is written to `docs/accessibility/wcag-audit-YYYY-MM-DD.md`. Each finding includes:
+
+- The WCAG 2.2 success criterion (e.g. *1.4.3 Contrast (Minimum)*)
+- Severity — Blocker, Serious, Moderate, or Minor
+- File and line
+- Affected user groups — blind, low-vision, motor, cognitive
+- A short description
+- A concrete fix example
+
+A remediation priority list sits at the end so you know what to tackle first.
 
 ## Installation
 
@@ -158,6 +171,8 @@ The audit covers all four POUR principles across WCAG 2.2 Level A and AA:
 
 ## Framework Support
 
+The plugin understands React, Next.js, Vue, Svelte, Tailwind, MUI, Radix, and Headless UI — including which of those already inject ARIA automatically, so elements that look unlabeled in source but work at runtime don't show up as findings.
+
 | Framework | What's Covered |
 |-----------|---------------|
 | HTML/CSS/JS | Full pattern coverage |
@@ -167,17 +182,11 @@ The audit covers all four POUR principles across WCAG 2.2 Level A and AA:
 | MUI / Radix / Headless UI | `<IconButton>`, `<Tooltip>` patterns |
 | SPAs | Route changes, title updates, live regions |
 
-## Limitations
+## Limits
 
-The plugin layers three tiers of verification:
-
-- **Static analysis (grep)** catches roughly 20–30% of WCAG issues — things expressible in source like missing `alt`, viewport zoom restrictions, focus-outline removal, tabindex misuse.
-- **Runtime verification (axe-core / Lighthouse)** catches most of the rest when available — computed color contrast, name/role/value, ARIA ID resolution, dynamic content, focus management. The plugin auto-detects `@axe-core/playwright` or Chrome DevTools MCP.
-- **Manual testing** is still required for full WCAG conformance — screen reader verification (VoiceOver / NVDA / TalkBack), keyboard-only flows, cognitive load, and real-user validation.
-
-The audit report clearly identifies which tiers executed, and the conformance declaration is constrained accordingly: a Tier 1-only scan is labeled "Source-level scan," never "Partially Conforms."
-
-**Auth-protected pages:** v1.1 does not run runtime verification against authenticated routes. Public pages only. Auth support is planned for a future release.
+- Only public pages are audited at runtime. Anything behind a login is source-scanned only; auth support is planned for a later release.
+- The plugin doesn't apply fixes. Findings come with example code, but editing is your call.
+- The report won't call your project WCAG-conformant unless all three passes ran — otherwise it labels itself "source-level scan" or "automated scan, manual verification required." Real conformance still needs manual testing with assistive technology.
 
 ## License
 
